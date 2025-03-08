@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+// Get port from environment variable or use default 8080
+const API_PORT = process.env.MAC_API_BRIDGE_PORT || '8080';
 // Base URL for the Calendar API Bridge
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `http://localhost:${API_PORT}`;
 
 /**
  * Validate and format a date string for the Calendar API Bridge
