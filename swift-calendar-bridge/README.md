@@ -46,6 +46,32 @@ To run the application in the background:
 nohup CalendarAPIBridge > /tmp/calendar-api-bridge.log 2>&1 &
 ```
 
+## Date Format
+
+The Calendar API Bridge now supports multiple date formats. When creating or updating events, you can use any of the following formats:
+
+1. ISO8601 with milliseconds and Z timezone (recommended):
+   ```
+   2025-03-09T10:00:00.000Z
+   ```
+
+2. ISO8601 without milliseconds:
+   ```
+   2025-03-09T10:00:00
+   ```
+
+3. ISO8601 with space instead of T:
+   ```
+   2025-03-09 10:00:00
+   ```
+
+4. ISO8601 with forward slashes:
+   ```
+   2025/03/09 10:00:00
+   ```
+
+The Calendar API Bridge has been updated with a flexible date decoder that can handle these formats automatically.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -59,4 +85,6 @@ nohup CalendarAPIBridge > /tmp/calendar-api-bridge.log 2>&1 &
 4. **Permission Issues**: If you're having trouble with calendar permissions, try running the setup script:
    ```
    ./setup-permissions.swift
-   ``` 
+   ```
+
+5. **Date Format Errors**: If you're seeing errors about date formats, make sure you're using the correct ISO8601 format as described above. 

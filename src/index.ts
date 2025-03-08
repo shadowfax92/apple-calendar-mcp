@@ -104,25 +104,47 @@ server.tool(
   },
   async ({ calendarId, title, startDate, endDate, location, notes }) => {
     try {
-      const result = await calendars.createCalendarEvent(
-        calendarId, 
-        title, 
-        startDate, 
-        endDate, 
-        location, 
-        notes
-      );
-      
-      return {
-        content: [{ 
-          type: "text", 
-          text: JSON.stringify({ 
-            success: true, 
-            message: "Event created", 
-            event: result 
-          }) 
-        }]
-      };
+      try {
+        const result = await calendars.createCalendarEvent(
+          calendarId, 
+          title, 
+          startDate, 
+          endDate, 
+          location, 
+          notes
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: JSON.stringify({ 
+              success: true, 
+              message: "Event created", 
+              event: result 
+            }) 
+          }]
+        };
+      } catch (error: any) {
+        // Check if it's a date format error
+        if (error.message && (error.message.includes('date') || 
+            (error.response?.data?.reason && error.response.data.reason.includes('ISO8601')))) {
+          return {
+            content: [{ 
+              type: "text", 
+              text: JSON.stringify({ 
+                error: "Failed to create event due to date format issues", 
+                message: "The Calendar API requires a specific ISO8601 format that we couldn't determine. The Swift API is expecting a specific format that we haven't been able to match.",
+                details: "This is a known issue with the Calendar API Bridge. Please check the API documentation for the correct date format.",
+                workaround: "You can try creating events directly through the macOS Calendar app instead."
+              }) 
+            }],
+            isError: true
+          };
+        }
+        
+        // If it's not a date format error, rethrow
+        throw error;
+      }
     } catch (error) {
       return {
         content: [{ 
@@ -149,33 +171,53 @@ server.tool(
   },
   async ({ calendarId, eventId, title, startDate, endDate, location, notes }) => {
     try {
-      const updates = {
-        title,
-        startDate,
-        endDate,
-        location,
-        notes
-      };
-      
-      // Filter out undefined values
-      Object.keys(updates).forEach(key => {
-        if (updates[key as keyof typeof updates] === undefined) {
-          delete updates[key as keyof typeof updates];
+      try {
+        const updates = {
+          title,
+          startDate,
+          endDate,
+          location,
+          notes
+        };
+        
+        // Filter out undefined values
+        Object.keys(updates).forEach(key => {
+          if (updates[key as keyof typeof updates] === undefined) {
+            delete updates[key as keyof typeof updates];
+          }
+        });
+        
+        const result = await calendars.updateCalendarEvent(calendarId, eventId, updates);
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: JSON.stringify({ 
+              success: true, 
+              message: "Event updated", 
+              event: result 
+            }) 
+          }]
+        };
+      } catch (error: any) {
+        // Check if it's a date format error
+        if (error.message && error.message.includes('date')) {
+          return {
+            content: [{ 
+              type: "text", 
+              text: JSON.stringify({ 
+                error: "Failed to update event due to date format issues", 
+                message: "The Calendar API requires a specific date format that we couldn't determine. Please try using a different date format or contact the API provider for the correct format.",
+                details: error.message
+              }) 
+            }],
+            isError: true
+          };
         }
-      });
-      
-      const result = await calendars.updateCalendarEvent(calendarId, eventId, updates);
-      
-      return {
-        content: [{ 
-          type: "text", 
-          text: JSON.stringify({ 
-            success: true, 
-            message: "Event updated", 
-            event: result 
-          }) 
-        }]
-      };
+        
+        // If it's not a date format error, rethrow
+        throw error;
+      }
     } catch (error) {
       return {
         content: [{ 
@@ -256,7 +298,7 @@ async function runServer() {
   try {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.log("MCP Apple Calendars server started");
+    console.error("MCP Apple Calendars server started");
   } catch (error) {
     console.error("Failed to start MCP server:", error);
     process.exit(1);

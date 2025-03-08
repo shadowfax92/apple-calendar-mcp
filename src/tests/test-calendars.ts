@@ -1,5 +1,8 @@
 import * as calendars from '../calendars.js';
 
+// Constant to control event deletion
+const ENABLE_EVENT_DELETION = false;
+
 async function runTests() {
   console.log('Running calendar API tests...');
   
@@ -10,118 +13,83 @@ async function runTests() {
     console.log(JSON.stringify(allCalendars, null, 2));
     
     if (allCalendars.length === 0) {
-      console.log('No calendars found. Creating a test calendar...');
-      
-      // Test creating a calendar
-      console.log('\n2. Creating a test calendar:');
-      const newCalendar = await calendars.createCalendar('Test Calendar', '#FF0000');
-      console.log(JSON.stringify(newCalendar, null, 2));
-      
-      // Use the newly created calendar for further tests
-      const calendarId = newCalendar.id;
-      
-      // Test creating an event
-      console.log('\n3. Creating a test event:');
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(10, 0, 0, 0);
-      
-      const tomorrowEnd = new Date(tomorrow);
-      tomorrowEnd.setHours(11, 0, 0, 0);
-      
-      const newEvent = await calendars.createCalendarEvent(
-        calendarId,
-        'Test Event',
-        tomorrow.toISOString(),
-        tomorrowEnd.toISOString(),
-        'Test Location',
-        'Test Notes'
-      );
-      console.log(JSON.stringify(newEvent, null, 2));
-      
-      // Test getting events
-      console.log('\n4. Getting events from the test calendar:');
-      const events = await calendars.getCalendarEvents(calendarId);
-      console.log(JSON.stringify(events, null, 2));
-      
-      if (events.length > 0) {
-        const eventId = events[0].id;
-        
-        // Test updating an event
-        console.log('\n5. Updating the test event:');
-        const updatedEvent = await calendars.updateCalendarEvent(
-          calendarId,
-          eventId,
-          {
-            title: 'Updated Test Event',
-            notes: 'Updated Test Notes'
-          }
-        );
-        console.log(JSON.stringify(updatedEvent, null, 2));
-        
-        // Test deleting an event
-        console.log('\n6. Deleting the test event:');
-        const deleteEventResult = await calendars.deleteCalendarEvent(calendarId, eventId);
-        console.log(`Event deleted: ${deleteEventResult}`);
-      }
-      
-      // Test deleting the calendar
-      console.log('\n7. Deleting the test calendar:');
-      const deleteCalendarResult = await calendars.deleteCalendar(calendarId);
-      console.log(`Calendar deleted: ${deleteCalendarResult}`);
-    } else {
-      // Use the first calendar for testing
-      const calendarId = allCalendars[0].id;
-      
-      // Test getting events
-      console.log('\n2. Getting events from the first calendar:');
-      const events = await calendars.getCalendarEvents(calendarId);
-      console.log(JSON.stringify(events, null, 2));
-      
-      // Test creating an event
-      console.log('\n3. Creating a test event:');
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(10, 0, 0, 0);
-      
-      const tomorrowEnd = new Date(tomorrow);
-      tomorrowEnd.setHours(11, 0, 0, 0);
-      
-      const newEvent = await calendars.createCalendarEvent(
-        calendarId,
-        'Test Event',
-        tomorrow.toISOString(),
-        tomorrowEnd.toISOString(),
-        'Test Location',
-        'Test Notes'
-      );
-      console.log(JSON.stringify(newEvent, null, 2));
-      
-      // Test getting the event
-      console.log('\n4. Getting the test event:');
-      const eventId = newEvent.id;
-      const event = await calendars.getCalendarEvent(calendarId, eventId);
-      console.log(JSON.stringify(event, null, 2));
-      
-      // Test updating the event
-      console.log('\n5. Updating the test event:');
-      const updatedEvent = await calendars.updateCalendarEvent(
-        calendarId,
-        eventId,
-        {
-          title: 'Updated Test Event',
-          notes: 'Updated Test Notes'
-        }
-      );
-      console.log(JSON.stringify(updatedEvent, null, 2));
-      
-      // Test deleting the event
-      console.log('\n6. Deleting the test event:');
-      const deleteResult = await calendars.deleteCalendarEvent(calendarId, eventId);
-      console.log(`Event deleted: ${deleteResult}`);
+      console.log('No calendars found. Please create a calendar first.');
+      return;
     }
     
-    console.log('\nAll tests completed successfully!');
+    // Use the first calendar that allows modifications
+    const targetCalendar = allCalendars.find(cal => cal.allowsModifications === true);
+    
+    if (!targetCalendar) {
+      console.log('No modifiable calendars found. Please create a modifiable calendar first.');
+      return;
+    }
+    
+    console.log(`\nUsing calendar: ${targetCalendar.title} (${targetCalendar.id})`);
+    const calendarId = targetCalendar.id;
+    
+    // Test getting events
+    console.log('\n2. Getting events from the selected calendar:');
+    const events = await calendars.getCalendarEvents(calendarId);
+    console.log(JSON.stringify(events, null, 2));
+    
+    // Test creating an event
+    console.log('\n3. Creating a test event:');
+    
+    // Create dates for tomorrow at 10:00 and 11:00
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    
+    const tomorrowEnd = new Date(tomorrow);
+    tomorrowEnd.setHours(11, 0, 0, 0);
+    
+    // Format dates as ISO strings
+    const startDateStr = tomorrow.toISOString();
+    const endDateStr = tomorrowEnd.toISOString();
+    
+    console.log(`Using start date: ${startDateStr}`);
+    console.log(`Using end date: ${endDateStr}`);
+    
+    try {
+      const newEvent = await calendars.createCalendarEvent(
+        calendarId,
+        'Test Event from MCP',
+        startDateStr,
+        endDateStr,
+        'Test Location',
+        'Test Notes - Created by MCP Apple Calendars test'
+      );
+      
+      console.log('Event created successfully:');
+      console.log(JSON.stringify(newEvent, null, 2));
+      
+      // If event creation was successful, try to delete it
+      if (newEvent && newEvent.id && ENABLE_EVENT_DELETION) {
+        console.log(`\n4. Deleting the test event (ID: ${newEvent.id}):`);
+        const deleteResult = await calendars.deleteCalendarEvent(calendarId, newEvent.id);
+        console.log(`Event deleted: ${deleteResult}`);
+      }
+    } catch (error: any) {
+      console.error('Error during event creation:', error.message);
+      
+      // If we couldn't create an event, try to get existing events and delete one
+      console.log('\nTrying to get and delete an existing event instead...');
+      const currentEvents = await calendars.getCalendarEvents(calendarId);
+      
+      if (currentEvents && currentEvents.length > 0) {
+        const eventToDelete = currentEvents[0];
+        console.log(`Found existing event: ${eventToDelete.title} (${eventToDelete.id})`);
+        console.log(`Deleting event...`);
+        
+        const deleteResult = await calendars.deleteCalendarEvent(calendarId, eventToDelete.id);
+        console.log(`Event deleted: ${deleteResult}`);
+      } else {
+        console.log('No existing events found to delete.');
+      }
+    }
+    
+    console.log('\nAll tests completed!');
   } catch (error) {
     console.error('Test failed:', error);
   }

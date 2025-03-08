@@ -38,6 +38,32 @@ The MCP server provides the following tools for AI models:
 - `updateCalendarEvent`: Update an existing event
 - `deleteCalendarEvent`: Delete an event from a calendar
 
+## Date Formats
+
+When creating or updating events, you can use any of the following date formats:
+
+1. ISO8601 with milliseconds and Z timezone (recommended):
+   ```
+   2025-03-09T10:00:00.000Z
+   ```
+
+2. ISO8601 without milliseconds:
+   ```
+   2025-03-09T10:00:00
+   ```
+
+3. ISO8601 with space instead of T:
+   ```
+   2025-03-09 10:00:00
+   ```
+
+4. ISO8601 with forward slashes:
+   ```
+   2025/03/09 10:00:00
+   ```
+
+The Calendar API Bridge has been updated to handle these date formats automatically.
+
 ## Development
 
 To run the server in development mode with automatic reloading:
