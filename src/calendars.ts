@@ -152,7 +152,6 @@ export async function createCalendarEvent(
     if (location) eventData.location = location;
     if (notes) eventData.notes = notes;
     
-    console.log('Creating event with data:', JSON.stringify(eventData));
     
     // Send the request
     const response = await axios.post(
@@ -201,7 +200,7 @@ export async function updateCalendarEvent(
       updatedData.endDate = formattedEndDate;
     }
     
-    console.log('Updating event with data:', JSON.stringify(updatedData));
+    console.error('Updating event with data:', JSON.stringify(updatedData));
     
     // Send the request
     const response = await axios.put(
