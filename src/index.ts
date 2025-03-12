@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -294,7 +296,7 @@ server.tool(
 );
 
 // Start the server
-async function runServer() {
+export async function runServer() {
   try {
     const transport = new StdioServerTransport();
     await server.connect(transport);
@@ -305,4 +307,7 @@ async function runServer() {
   }
 }
 
-runServer(); 
+// Auto-start the server if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runServer();
+} 

@@ -1,0 +1,23 @@
+# Source files
+src/
+tsconfig.json
+
+# Git files
+.git/
+.gitignore
+
+# Node modules
+node_modules/
+
+# Swift bridge
+swift-calendar-bridge/
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# Build artifacts
+*.tsbuildinfo 

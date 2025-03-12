@@ -6,7 +6,11 @@
     "esModuleInterop": true,
     "outDir": "./dist",
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "declaration": true,
+    "preserveSymlinks": true
   },
   "include": ["src/**/*"]
 } 
